@@ -29,7 +29,7 @@ class DeploySCMNoneTest < Test::Unit::TestCase
     @config[:repository] = '.'
     rev = ''
     dest = 'c:/Documents and settings/admin/tmp'
-    assert_equal "xcopy . \"c:/Documents and settings/admin/tmp\" /S/I/Y/Q/E", @source.checkout(rev, dest)
+    assert_equal "xcopy \".\" \"c:/Documents and settings/admin/tmp\" /I /Y /Q /E", @source.checkout(rev, dest)
   end
 
 end
