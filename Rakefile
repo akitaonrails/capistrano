@@ -30,5 +30,6 @@ Echoe.new('capistrano', version) do |p|
                         "net-sftp        >=2.0.0",
                         "net-scp         >=1.0.0",
                         "net-ssh-gateway >=1.0.0",
+                        "archive-tar-minitar >=0.5.2",
                         "highline"]
 end

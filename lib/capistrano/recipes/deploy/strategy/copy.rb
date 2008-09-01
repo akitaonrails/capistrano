@@ -87,7 +87,15 @@ module Capistrano
           File.open(File.join(destination, "REVISION"), "w") { |f| f.puts(revision) }
 
           logger.trace "compressing #{destination} to #{filename}"
-          Dir.chdir(tmpdir) { system(compress(File.basename(destination), File.basename(filename)).join(" ")) }
+          # if it is Windows, force gzip using the pure Ruby minitar library
+          if Capistrano::Deploy::LocalDependency.on_windows?
+            require 'zlib'
+            require 'archive/tar/minitar'
+            Dir.chdir(tmpdir) { Archive::Tar::Minitar.pack(File.basename(destination), Zlib::GzipWriter.new(File.open(File.basename(filename), 'wb'))) }
+            configuration[:copy_compression] = :gzip
+          else
+            Dir.chdir(tmpdir) { system(compress(File.basename(destination), File.basename(filename)).join(" ")) }
+          end
 
           upload(filename, remote_filename)
           run "cd #{configuration[:releases_path]} && #{decompress(remote_filename).join(" ")} && rm #{remote_filename}"
