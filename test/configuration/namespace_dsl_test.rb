@@ -108,9 +108,9 @@ class ConfigurationNamespacesDSLTest < Test::Unit::TestCase
   end
 
   def test_defining_ask_should_add_task_as_method
-    assert !@config.methods.include?("original")
+    assert !@config.methods.any? { |m| m.to_sym == :original }
     @config.task(:original) { puts "foo" }
-    assert @config.methods.include?("original")
+    assert @config.methods.any? { |m| m.to_sym == :original }
   end
 
   def test_calling_defined_task_should_delegate_to_execute_task
@@ -237,6 +237,12 @@ class ConfigurationNamespacesDSLTest < Test::Unit::TestCase
     @config.namespace(:outer) {}
     ns = @config.namespaces[:outer]
     assert ns.respond_to?(:original_initialize_called)
+  end
+  
+  def test_namespace_should_accept_respond_to_with_include_priv_parameter
+    @config.namespace(:outer) {}
+    ns = @config.namespaces[:outer]
+    assert ns.respond_to?(:original_initialize_called, true)
   end
 
   def test_namespace_should_delegate_unknown_messages_to_its_parent

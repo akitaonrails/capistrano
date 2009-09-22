@@ -9,6 +9,7 @@ module Capistrano
       def initialize(configuration)
         @configuration = configuration
         @success = true
+        @hosts = nil
       end
 
       def directory(path, options={})
@@ -83,7 +84,7 @@ module Capistrano
 
       def message
         s = @message.dup
-        s << " (#{@hosts})" if @hosts && @hosts.any?
+        s << " (#{@hosts})" if @hosts
         s
       end
 
@@ -91,7 +92,7 @@ module Capistrano
 
       def try(command, options)
         return unless @success # short-circuit evaluation
-        configuration.run(command, options) do |ch,stream,out|
+        configuration.invoke_command(command, options) do |ch,stream,out|
           warn "#{ch[:server]}: #{out}" if stream == :err
           yield ch, stream, out if block_given?
         end

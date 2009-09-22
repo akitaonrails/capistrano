@@ -54,7 +54,7 @@ module Capistrano
         # and "local_scm_command" to be set, if the two differ.
         #
         # Alternatively, it may be called with a block, and for the duration of
-        # the block, all requests on this configuration object will be 
+        # the block, all requests on this configuration object will be
         # considered local.
         def local
           if block_given?
@@ -150,6 +150,13 @@ module Capistrano
           command || default_command
         end
 
+        # A helper method that can be used to define SCM commands naturally.
+        # It returns a single string with all arguments joined by spaces,
+        # with the scm command prefixed onto it.
+        def scm(*args)
+          [command, *args].compact.join(" ")
+        end
+
         private
 
           # A helper for accessing variable values, which takes into
@@ -174,16 +181,13 @@ module Capistrano
             self.class.default_command
           end
 
-          # A helper method that can be used to define SCM commands naturally.
-          # It returns a single string with all arguments joined by spaces,
-          # with the scm command prefixed onto it.
-          def scm(*args)
-            [command, *args].compact.join(" ")
-          end
-
           # A convenience method for accessing the declared repository value.
           def repository
             variable(:repository)
+          end
+
+          def arguments
+            variable(:scm_arguments)
           end
       end
 

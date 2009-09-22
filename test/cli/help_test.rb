@@ -33,7 +33,7 @@ class CLIHelpTest < Test::Unit::TestCase
 
   def test_execute_requested_actions_with_tasks_should_call_task_list
     @cli.options[:tasks] = true
-    @cli.expects(:task_list).with(:config)
+    @cli.expects(:task_list).with(:config, true)
     @cli.expects(:explain_task).never
     @cli.execute_requested_actions(:config)
     assert !@cli.called_original
@@ -57,11 +57,36 @@ class CLIHelpTest < Test::Unit::TestCase
     expected_max_len = 80 - 3 - MockCLI::LINE_PADDING
     task_list = [task("c"), task("g", "c:g"), task("b", "c:b"), task("a")]
     task_list.each { |t| t.expects(:brief_description).with(expected_max_len).returns(t.fully_qualified_name) }
-  
+
     config = mock("config")
     config.expects(:task_list).with(:all).returns(task_list)
     @cli.stubs(:puts)
     @cli.task_list(config)
+  end
+
+  def test_task_list_should_query_tasks_with_pattern
+    expected_max_len = 80 - 3 - MockCLI::LINE_PADDING
+    task_list = [task("g", "c:g"), task("b", "c:b")]
+    task_list.each { |t| t.expects(:brief_description).with(expected_max_len).returns(t.fully_qualified_name)}
+
+    config = mock("config")
+    config.expects(:task_list).with(:all).once.returns(task_list)
+
+    @cli.stubs(:puts)
+    @cli.task_list(config, "c")
+  end
+
+  def test_task_list_should_query_for_all_tasks_when_pattern_doesnt_match
+    expected_max_len = 80 - 3 - MockCLI::LINE_PADDING
+    task_list = [task("g", "c:g"), task("b", "c:b")]
+    task_list.each { |t| t.expects(:brief_description).with(expected_max_len).returns(t.fully_qualified_name) }
+
+    config = mock("config")
+    config.expects(:task_list).with(:all).times(2).returns(task_list)
+
+    @cli.stubs(:warn)
+    @cli.stubs(:puts)
+    @cli.task_list(config, "z")
   end
 
   def test_task_list_should_never_use_less_than_MIN_MAX_LEN_chars_for_descriptions
@@ -133,7 +158,8 @@ class CLIHelpTest < Test::Unit::TestCase
 
   private
 
-    def task(name, fqn=name, desc="a description")
-      stub("task", :name => name, :fully_qualified_name => fqn, :description => desc)
-    end
+  def task(name, fqn=name, desc="a description")
+    stub("task", :name => name, :fully_qualified_name => fqn, :description => desc)
+  end
+
 end

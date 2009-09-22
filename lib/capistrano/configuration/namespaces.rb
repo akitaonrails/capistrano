@@ -67,7 +67,7 @@ module Capistrano
         raise ArgumentError, "expected a block" unless block_given?
 
         namespace_already_defined = namespaces.key?(name)
-        if all_methods.include?(name.to_s) && !namespace_already_defined
+        if all_methods.any? { |m| m.to_sym == name } && !namespace_already_defined
           thing = tasks.key?(name) ? "task" : "method"
           raise ArgumentError, "defining a namespace named `#{name}' would shadow an existing #{thing} with that name"
         end
@@ -92,7 +92,7 @@ module Capistrano
         raise ArgumentError, "expected a block" unless block_given?
 
         task_already_defined = tasks.key?(name)
-        if all_methods.include?(name.to_s) && !task_already_defined
+        if all_methods.any? { |m| m.to_sym == name } && !task_already_defined
           thing = namespaces.key?(name) ? "namespace" : "method"
           raise ArgumentError, "defining a task named `#{name}' would shadow an existing #{thing} with that name"
         end
@@ -177,8 +177,8 @@ module Capistrano
             raise NotImplementedError, "roles cannot be defined in a namespace"
           end
 
-          def respond_to?(sym)
-            super || parent.respond_to?(sym)
+          def respond_to?(sym, include_priv=false)
+            super || parent.respond_to?(sym, include_priv)
           end
 
           def method_missing(sym, *args, &block)
